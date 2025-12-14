@@ -16,7 +16,7 @@ void *lector(void *arg) {
        
         // Leer datos
         printf("Lector %d leyendo: %d\n", id, dato);
-        usleep(rand() % 1000000); // Retraso aleatorio de hasta 1 segundo (en microsegundos)
+        usleep(rand() % 400000); // Retraso aleatorio de hasta 1 segundo (en microsegundos)
     }
 }
 
@@ -26,10 +26,14 @@ void *escritor(void *arg) {
     while (1) {
         
         // Escribir datos
-        dato ++;
+        aux=dato;
+        usleep(rand() %8000);
+        aux++;
+        usleep(rand() %8000);
+        dato=aux;
         printf("Escritor %d escribiendo: %d\n", id, dato);
 
-        usleep(rand() % 2000000); // Retraso aleatorio de hasta 2 segundos (en microsegundos)
+        usleep(rand() % 200000); // Retraso aleatorio de hasta 2 segundos (en microsegundos)
     }
 }
 
@@ -71,7 +75,7 @@ int main() {
     return 0;
 }
 
-*/ Explicación:
+/*Explicación:
 Inicializar atributos con pthread_attr_init
 Crear hilos lectores y escritores con pthread_create
 Esperar su finalización con pthread_join */

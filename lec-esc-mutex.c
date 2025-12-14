@@ -84,6 +84,7 @@ void *escritor(void *arg) {
 }
 
 
+
 int main() {
     pthread_t lectores[MAX_L], escritores[MAX_E];
     pthread_attr_t atrib;
