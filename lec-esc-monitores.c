@@ -17,7 +17,8 @@ typedef struct {
     pthread_cond_t cond_escritores;
 } monitor_t;
 
-// inicialización del monitor
+monitor_t monitor;
+
 void monitor_init(monitor_t *m) {
     m->nlectores = 0;
     m->nesc_activos = 0;
@@ -29,7 +30,7 @@ void monitor_init(monitor_t *m) {
 }
 
 // procedimientos del monitor
-void entrada_lector(monitor_t *m) {
+void comenzar_lectura(monitor_t *m) {
     pthread_mutex_lock(&m->mutex);
 
     while (m->nesc_activos || m->nesc_esperando>0) {
@@ -40,7 +41,7 @@ void entrada_lector(monitor_t *m) {
     pthread_mutex_unlock(&m->mutex);
 }
 
-void salida_lector(monitor_t *m) {
+void terminar_lectura(monitor_t *m) {
     pthread_mutex_lock(&m->mutex);
     m->nlectores--;
 
@@ -50,7 +51,7 @@ void salida_lector(monitor_t *m) {
     pthread_mutex_unlock(&m->mutex);
 }
 
-void entrada_escritor(monitor_t *m) {
+void comenzar_escritura(monitor_t *m) {
     pthread_mutex_lock(&m->mutex);
 
     m->nesc_esperando++;
@@ -63,7 +64,7 @@ void entrada_escritor(monitor_t *m) {
     pthread_mutex_unlock(&m->mutex);
 }
 
-void salida_escritor(monitor_t *m) {
+void terminar_escritura(monitor_t *m) {
     pthread_mutex_lock(&m->mutex);
     m->nesc_activos = 0;
 
@@ -73,30 +74,28 @@ void salida_escritor(monitor_t *m) {
     pthread_mutex_unlock(&m->mutex);
 }
 
-
-monitor_t monitor;
-
 void *lector(void *arg) {
     int id = (int )arg;
 
-    while (1) {
-        entrada_lector(&monitor);
+    for(int i=0; i<5; i++) {
+        comenzar_lectura(&monitor);
 
         // LECTURA
         printf("Lector %d leyendo: %d\t", id, monitor.dato);
         printf("Escritores esperando: %d\n", monitor.nesc_esperando);
         usleep(rand() % 300000);
 
-        salida_lector(&monitor);
+        terminar_lectura(&monitor);
         usleep(rand() % 300000);
     }
+    pthread_exit(NULL);
 }
 
 void *escritor(void *arg) {
     int id = (int )arg;
 
-    while (1) {
-        entrada_escritor(&monitor);
+    for(int i=0; i<5; i++) {
+        comenzar_escritura(&monitor);
 
         // ESCRITURA
         monitor.dato++;
@@ -104,9 +103,10 @@ void *escritor(void *arg) {
         printf("Escritores esperando: %d\n", monitor.nesc_esperando);
         usleep(rand() % 300000);
 
-        salida_escritor(&monitor);
+        terminar_escritura(&monitor);
         usleep(rand() % 300000);
     }
+    pthread_exit(NULL);
 }
 
 int main() {
@@ -133,6 +133,6 @@ int main() {
     for (i = 0; i < MAX_E; i++) {
         pthread_join(escritores[i], NULL);
     }
-
+    
     return 0;
 }

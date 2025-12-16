@@ -13,6 +13,7 @@ pthread_cond_t cond_escritores = PTHREAD_COND_INITIALIZER;
 int dato = 0;
 int nlectores = 0;
 int escribiendo = 0;
+int escritores_esperando = 0;
 
 void *lector(void *arg) {
     int id = (int ) arg;
@@ -21,8 +22,8 @@ void *lector(void *arg) {
         // ENTRADA SECCIÓN CRÍTICA
         pthread_mutex_lock(&mutex);
 
-        // Si hay escritor escribiendo o esperando, el lector espera
-        while (escribiendo) {
+        // Si hay escritor escribiendo, el lector espera
+        while (escribiendo || escritores_esperando > 0) {
             pthread_cond_wait(&cond_lectores, &mutex);
         }
 
@@ -52,23 +53,30 @@ void *lector(void *arg) {
 
 void *escritor(void *arg) {
     int id = (int ) arg;
+    int aux;
 
     while (1) {
         // ENTRADA SECCIÓN CRÍTICA
         pthread_mutex_lock(&mutex);
 
         // Espera mientras haya lectores o un escritor escribiendo
+        escritores_esperando++;
         while (nlectores > 0 || escribiendo) {
             pthread_cond_wait(&cond_escritores, &mutex);
         }
+        escritores_esperando--;
 
         escribiendo = 1; // Marca que está escribiendo
         pthread_mutex_unlock(&mutex);
 
         // ESCRITURA
-        dato++;
+        aux = dato;
+        usleep(rand() % 8000);
+        aux++;
+        usleep(rand() % 8000);
+        dato = aux;
         printf("Escritor %d escribiendo: %d\n", id, dato);
-        usleep(rand() % 300000);
+        //usleep(rand() % 300000);
 
         // SALIDA SECCIÓN CRÍTICA
         pthread_mutex_lock(&mutex);

@@ -23,7 +23,8 @@ void *lector(void *arg) {
         //bloquea el acceso a nlectores para comprobar si 1 o 0
         sem_wait(&mutex);
         nlectores++;
-        // deja en espera a los escritores porque hay un lector leyendo
+        /* deja en espera a los escritores porque hay un lector leyendo 
+        (si hay lectores leyendo, hasta que el último no salga, no puede entrar ningún escritor)*/
         if (nlectores == 1) {
             sem_wait(&m_escritores);
         }

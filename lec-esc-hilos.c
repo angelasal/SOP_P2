@@ -20,7 +20,7 @@ void *lector(void *arg) {
 
 void *escritor(void *arg) {
     int id = (int )arg;
-     int aux;
+    int aux;
     while (1) {
         aux=dato;
         usleep(rand() %8000);
